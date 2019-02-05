@@ -1,0 +1,134 @@
+---
+title: 'Homework #8'
+author: 'Univariate Distributions - Derrik Adams'
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Concepts  
+
+1.  Carefully explain how visualizing, transforming, and modelling interact in exploratory data analysis.
+1.  Identify and explain the ggplot geometric objects that appropriately depict the distributions of
+    a.  categorical variables
+    a.  numerical variables
+
+### Concept Answers  
+1.  Visualizing your data using charts or plots allows you to see trends in the data easily, see data that's missing or outliers, and lots else. Through visualizing your data, you can answer questions you had and find more questions based on the trends that you find. Using those new questions you can beging to transform your data and manipulate it to show other trends that are less obvious, improving your understanding of all the variables at play. As you learn more and more about your data through this, you can begin to model the data and create new models to predict situations involving those variables. 
+1.  Geometric objects for categorical and numerical variables  
+    a.  Categorical - To depict categorical variables, use a bar chart that shows the count or the number of observations for each category
+    a.  Numerical - To depict numerical variables, use a histogram to depict the count or frequency of observations that occur within specified ranges of the variable.  
+    
+## Interpretation of code  
+
+Interpret the following R code:  
+
+```{r code chunk interpretation}
+Median <- median(mpg$cty)
+lower_hinge <- quantile(mpg$cty, 0.25)
+upper_hinge <- quantile(mpg$cty, 0.75)
+
+mpg %>% 
+  ggplot(aes(x = factor(0), y = cty)) +
+  geom_violin(fill = "lightblue") +
+  geom_hline(yintercept = Median, color = "red") +
+  geom_hline(yintercept = lower_hinge, color = "blue") +
+  geom_hline(yintercept = upper_hinge, color = "blue") +
+  geom_boxplot(fill = "lightgreen", width = 0.25) +
+  coord_flip() +
+  labs(
+    title = "City mileage may not be normally distributed.",
+    x = "",
+    y = "Miles Per Gallon"
+  )
+```
+  
+### Code Interpretation  
+1.  Define a new data variable called "Median" that is the median value of MPG for city from the mpg dataset
+1.  Define a new data variable called "lower_hinge" that is the MPG value that is higher than 25% of the data and lower than 75%
+1.  Define a new data variable called "upper_hing" that is the MPG value that is higher than 75% of the data and lower than 25%
+1.  Working on the mpg dataset
+1.  Create a plot where the aesthetic has all 0's mapped to the x axis and the cty mpg is mapped to the y axis
+1.  Generate a violin plot that is filled light blue
+1.  Create a horizontal line whose y-intercept is at the Median value defined above and colored red
+1.  Create a horizontal line whose y-intercept is at the lower hinge value defined above and colored blue
+1.  Create a horizontal line whose y-intercept is at the upper hinge value defined above and colored blue
+1.  Create a boxplot that is filled light green with a width of .25
+1.  Flip the coordinate axis so that the x-axis is on the y-axis and the y-axis is on the x-axis
+1.  The rest of the code just labels the title of the plot and the axes
+
+## Write code  
+
+The faithful dataset includes 272 observations that report the length of time that the Old Faithful geyser in Yellowstone National Park erupts and the time interval between the eruptions. Use exploratory data analysis to investigate the distributions of each of the two variables, eruptions and waiting. Your code should generate summary statistics and graphs that give you insights into:  
+
+1.  Location
+1.  Scale
+1.  Symmetry 
+1.  Outliers  
+
+```{r Faithful Dataset Visualization}
+data(faithful)
+# Rename the variables so they're more intuitive and names actually make sense
+faithful <- rename(faithful, duration = eruptions, interval = waiting)
+
+#Location or central tendency (mean and median)
+#Scale or spread (sd, range, and interquartile range)
+#Symmetry   
+#Outliers 
+
+#Location Insight - Create a violin boxplot with quartile ranges like above for the duration and interval variables
+mean_duration <-  mean(faithful$duration)
+median_duration <- median(faithful$duration)
+lower_hinge_duration <- quantile(faithful$duration, .25)
+upper_hinge_duration <- quantile(faithful$duration, .75)
+
+mean_interval <-  mean(faithful$interval)
+median_interval <- median(faithful$interval)
+lower_hinge_interval <-  quantile(faithful$interval, .25)
+upper_hinge_interval <-  quantile(faithful$interval, .75)
+
+#Plot for Duration Location
+faithful %>%
+  ggplot(mapping = aes(x = factor(0), y = duration))+
+  geom_violin(fill = "lightblue")+
+  geom_hline(yintercept = mean_duration, color = "green")+
+  geom_hline(yintercept = median_duration, color = "black")+
+  geom_hline(yintercept = lower_hinge_duration, color = "red")+
+  geom_hline(yintercept = upper_hinge_duration, color = "red")+
+  geom_boxplot(fill = "grey", width = .075)+
+  coord_flip()+
+  labs(
+    x = "",
+    y = "Duration of Eruption (minutes)",
+    title = "Old Faithful Eruption Duration"
+  )
+
+#Plot for Interval Length Location
+faithful %>%
+  ggplot(mapping = aes(x = factor(0), y = interval))+
+  geom_violin(fill = "lightblue")+
+  geom_hline(yintercept = mean_interval, color = "green")+
+  geom_hline(yintercept = median_interval, color = "black")+
+  geom_hline(yintercept = lower_hinge_interval, color = "red")+
+  geom_hline(yintercept = upper_hinge_interval, color = "red")+
+  geom_boxplot(fill = "grey", width = .075)+
+  coord_flip()+
+  labs(
+    x = "",
+    y = "Interval Between Eruptions (minutes)",
+    title = "Old Faithful Interval Length Between Eruptions"
+  )
+```  
+
+#### Duration Data Summary
+```{r Old Faithful Duration Summary}
+summary(faithful$duration)
+```
+#### Interval Data Summary
+```{r Old Faithful Interval Summary}
+summary(faithful$interval)
+```
+

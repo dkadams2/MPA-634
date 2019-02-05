@@ -1,0 +1,102 @@
+---
+title: 'Homework #7'
+author: 'Summarization by Group - Derrik Adams'
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(nycflights13)
+```
+
+## Concepts  
+
+Carefully explain the following:
+1.  The two elements that define the distribution of a random variable
+1.  How the mean measures the location of a distribution
+1.  How the standard deviation measures the scale or spread of a distribution  
+
+### Concept Answers
+1.  Possible values and probability of those values.
+1.  The mean is just the average of all the data and is where the distribution is centered around
+1.  The standard deviation value tells you how far away from the mean value that up to 68.2% of the data is for one standard deviation, and two standard deviations tells you how far away from the mean up to about 95% of the data is, etc.
+ 
+
+## Interpretation of code  
+
+Interpret the following R code:  
+
+```{r code chunk interpretation, warning = FALSE, message = FALSE}
+flights %>%
+  group_by(day, month) %>%
+  summarize(cancelled = mean(is.na(dep_time)) * 100,
+            delay = mean(dep_delay, na.rm = TRUE)) %>%
+  ggplot(mapping = aes(x = delay, y = cancelled)) +
+  geom_point() +
+  geom_smooth(color = "red") +
+  labs(
+    title = "Large average delays associate with percentage of cancelled flights",
+    x = "Average Delay in Minutes",
+    y = "Percentage of cancelled flights"
+  )
+```
+  
+### Code Interpretation
+
+1.  Defines the dataset being used as "flights" then uses a pipe to tell what to do to that dataset
+1.  Groups the flights data by day and month, then uses a pipe to tell the code what to do with the grouped data next
+1.  Uses summarize() to combine all the dep_time data into an a percentage of flights cancelled, where is.na(dep_time) returns how many flights were never departed
+1.  Creates "delay" variable as the average of the departure delay times, then uses a pipe to continue on to plotting the information
+1.  Creates a ggplot and maps the average delay time against the average % cancelled
+1.  Creates a scatterplot of the data
+1.  Adds a smooth loess fit line colored red
+1.  Next three lines label the axis of the plots and gives it a title.  
+
+## Write code that accomplishes the following:
+
+1.  Create a new data frame that excludes cancelled flights
+1.  Rank carriers from best to worst by their average arrival delays
+1.  Rank destination airports from worst to best by their average arrival delays
+1.  Rank NYC airports from best to worst by their average departure delays
+1.  Rank carriers from best to worst by their on time percentage
+
+Is it possible to use the above results to rank carriers? As a hint, think about how the following code might help you consider this question.  
+  
+  Of course you could rank carriers using the above results. If you look at the on-time percentages, you could use that to compute the average number of flights to specific origins from certain destinations that show up on-time by multiplying the time percentage by the count. Then you could just look at the total number of flights predicted to be on time based on that percentage and rank the carriers accordingly
+
+```{r Code Portion}
+#Create new data frame that excludes cancelled flights
+non_cancelled_flights <- filter(flights, !is.na(dep_delay), !is.na(arr_delay)) 
+
+#Rank carriers from best (smallest) to worst (highest) based on average arrival delays
+non_cancelled_flights %>%
+  group_by(carrier) %>%
+  summarize(carrier_ave_arrival_delay = mean(arr_delay))%>%
+  arrange(carrier_ave_arrival_delay) #Don't need to make it descending since it already arranges it from smallest to largest
+
+#Rank destination airports from worst (highest) to best (smallest) by their average arrival delays
+non_cancelled_flights %>%
+  group_by(dest) %>%
+  summarize(destination_ave_arrival_delay = mean(arr_delay)) %>%
+  arrange(desc(destination_ave_arrival_delay)) #Need to make it descending so that it arranges it from largest to smallest
+
+#Rank NYC airports from best (smallest) to worst (highest) by their average departure delays
+non_cancelled_flights %>%
+  group_by(origin) %>%
+  summarize(origin_ave_departure_delay = mean(dep_delay)) %>%
+  arrange(origin_ave_departure_delay) #Don't need to make it descending since it already arranges it from smallest to largest
+
+#Rank carriers from best (highest) to worst (smallest) by their on-time percentage
+non_cancelled_flights %>%
+  mutate(on_time = arr_delay <= 0) %>%
+  group_by(carrier)%>%
+  summarize(percent_ontime = mean(on_time)*100)%>%
+  arrange(desc(percent_ontime)) #Need to make it descending so that it arranges it from largest to smallest
+```
+
+```{r number of flights}
+flights %>% 
+  group_by(carrier, origin) %>%
+  count(dest)
+```  

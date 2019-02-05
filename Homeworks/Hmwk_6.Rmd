@@ -1,0 +1,105 @@
+---
+title: 'Homework #6'
+author: "Select and Mutate - Derrik Adams"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(nycflights13)
+data(flights)
+```
+
+## Concepts  
+
+1.  Compare and contrast filter and select.  
+1.  Explain how ":" can be used when selecting variables.
+
+### Concept Answers  
+
+1. Filter is used to select observations with certain values (so essentially rows of data), while select is used to select variables, or specific columns of data.
+1. The ":" can be used to select ranges of variables. So you could say 1:5 without having to say to select 1, 2, 3, 4, and 5.  
+
+## Interpretation of code  
+
+Interpret the following R code:  
+
+```{r code chunk interpretation, warning = FALSE}
+converted_times <- mutate(
+  flights,
+  hours = dep_time %/% 100,
+  minutes = dep_time %% 100,
+  minutes_after_midnight = 60 * hours + minutes
+)
+ggplot(
+  data = converted_times,
+  mapping = aes(x = origin,
+                y = minutes_after_midnight,
+                fill = origin)
+) +
+  geom_violin(show.legend = FALSE) +
+  geom_boxplot(width = 0.1,
+               fill = "grey",
+               show.legend = FALSE) +
+  coord_flip()
+```
+  
+### Code Interpretation
+28/29 - Create new data called converted_times that adds onto flights data  
+30 - Converts hours into just the hour part using integer division on dep_time (e.g. 517 is now just 5)  
+31 - Converts minutes into just the minute part using modulo on dep_time (e.g. 517 is now just 17)  
+32 - Calculates the number of minutes after midnight by using hours and minutes variables  
+33/34/35 - Creates new plot based on the converted times data  
+36 - Maps the origin of the flights to the x-axis aesthetic
+37 - Maps the minutes after midnight to the y-axis aesthetic  
+38 - Color the plot by origin  
+39/40 - Create violin plot without the legend  
+41 - Create a boxplot with width of .1  
+42 - Fill the boxplot with color grey to standout on the violin plot  
+43 - Hide the legend of the boxplot  
+44 - Flip the coordinate axis  
+
+## Coding Problem 1:
+
+1.  Select only those flights going from JFK to Chicago.  
+1.  Create a data frame that includes the following variables: dep_delay and arr_delay.    
+1.  Rename the variables dep_delay to departure and arr_delay to arrival.  
+1.  Draw a scatterplot of arrival on departure with colored loess and linear regression smoothers without confidence intervals.  
+
+
+```{r JFK to Chicago, warning = FALSE, message = FALSE}
+#Not sure which Chicago airport is being referenced or if all of them are, so just include all
+JFK_to_CH <- filter(flights, (origin == "JFK" & dest == "CGX") | ( origin == "JFK" & dest == "CHI") | ( origin == "JFK" & dest == "DPA") | ( origin == "JFK" & dest == "MDW") | ( origin == "JFK" & dest == "ORD") | ( origin == "JFK" & dest == "PWK") | ( origin == "JFK" & dest == "ZUN"))
+
+JFK_to_CH_delay <- select(JFK_to_CH, dep_delay, arr_delay)
+
+JFK_to_CH_delay <- rename(JFK_to_CH_delay, departure = dep_delay, arrival = arr_delay)
+
+ggplot(data = JFK_to_CH_delay, mapping = aes(x = departure, y = arrival))+
+  geom_point(alpha = .1)+
+  geom_smooth(color = "red", se = FALSE)+
+  geom_smooth(color = "blue", method = lm, se = FALSE)
+
+
+```  
+
+## Coding Problem 2: Use mutate and the ranking function to find the 5 most delayed flights departing from JFK.
+1.  Choose the flights departing from JFK
+1.  Create a new variable called delay which is the rank of the delay with 1 being the longest delay.
+1.  For the five most delayed flights, print the new variable delay along with year, month, day, dest, carrier, and dep_delay with the most delayed at the top of the table.  
+
+```{r 5 most delayed flights}
+JFK_flights <- filter(flights, origin == "JFK")
+
+JFK_flights <- mutate(JFK_flights,
+                   delay = min_rank(desc(dep_delay)))
+
+JFK_flights_selected <- select(JFK_flights, delay, year, month, day, dest, carrier, dep_delay)
+
+top_flights_arranged <- arrange(JFK_flights_selected, delay)
+
+head(top_flights_arranged, 5)
+
+
+```  

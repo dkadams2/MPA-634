@@ -1,0 +1,77 @@
+---
+title: 'Homework #5'
+author: "Filtering and Arranging - Derrik Adams"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(nycflights13)
+data(flights)
+```
+
+## Concepts  
+
+1.  Explain the differences among "=", "==", and "<-". Give an example of how you would use each of these symbols.  
+1.  Compare and contrast the logical operators "x & y" and "xor(x, y).
+
+## Concept Answers
+1.  "=" is an assignment operator often used to pass values into functions and for assigning values. The "==" is used to compare/show equality between values and not assign values to anything. "<-" is the assignment operator where we assign values or something to a variable. Examples:  
+*ggplot(data, mapping = aes(x = xdata, y = ydata)) or x = 3 could work, but not great
+*x <- filter(data, x==3)
+*x <- 3
+1.  "x & y" will only select the data that satisfies both condition x and condition y. It is essentially the intersection portion of a venn diagram. "xor(x,y)" basically means the opposite, so it selects the data that satisfies either just x or just y, but not the data that satisfies both x and y.
+
+## Interpretation of code  
+
+Interpret the following R code:  
+
+```{r code chunk}
+delta_spring_fall <- filter(flights, month == 5 | month == 9, carrier == "DL")
+ggplot(data = filter(delta_spring_fall, dep_delay < 90),
+       mapping = aes(x = as.factor(month),
+                     y = dep_delay,
+                     fill = as.factor(month))) +
+  geom_violin(show.legend = FALSE) +
+  geom_boxplot(width = 0.05, fill = "grey", show.legend = FALSE) +
+  coord_flip() +
+  facet_grid(rows = vars(origin))
+```
+### Code Line Interpretation  
+
+1. Flight data is filtered to show all flight information for flights in May (spring) and September (fall) for Delta
+1. Create a plot using the filtered the data where the departure delay is less than 90 min
+1. Map the month on the x-axis aesthetic
+1. Map the departure delay to the y-axis aesthetic
+1. Make the fill aesthetic based on the month, so the color of each violin will be based on months
+1. Create a violin plot using the previous mapping and do not show the legend
+1. Create a boxplot within the violin plot with width .05, colored grey, and do not show the legend
+1. Flip the coordinates so that the y- and x-axis are opposite the typical cartesian format
+1. Facet the plots in a grid where the rows are the flight origin  
+
+## Coding Problem 1: Use violin plots and facets to explore the distribution of departure delays for the American, Delta, and United (AA, DL, and UA) for flights going to Atlanta, Chicago, and Los Angeles (ATL, ORD, and LAX).  
+
+
+```{r airlines and destinations, warning = FALSE}
+dep_delay_filt <-  filter(flights, carrier %in% c("AA", "DL", "UA"), dest %in% c("ATL","ORD","LAX"))
+ggplot(data = dep_delay_filt, mapping = aes(x = carrier, y = dep_delay, fill = carrier))+
+  geom_violin(show.legend = FALSE)+
+  coord_flip()+
+  facet_grid(rows = vars(dest))
+```
+
+## Coding Problem 2: Air time and distance travelled are undoubtedly positively related. Investigate this relationship for all April flights from JFK.
+*  Use jittering and transparency to help with the overplotting.
+*  What might explain the clusters of points in the scatterplot?
+*  Is the relationship linear?  
+
+
+```{r air time and distance travelled, warning = FALSE}
+JFK_Apr <- filter(flights, month == 4, origin == "JFK")
+ggplot(data = JFK_Apr, mapping = aes(x = distance, y = air_time))+
+  geom_point(alpha = .1, position = "jitter")
+```
+  
+The clusters of points are due to the flight distances being the same since flights from JFK go to the same airports multiple times. The time taken to get there though changes, meaning you get a small variation in time taken to get to the same airport. The transparent dots show that the extremely different times don't happen often though.  
+The relationship is definitely linear, you can tell just by looking at it.
